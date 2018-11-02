@@ -160,4 +160,17 @@ malloc_end:
 free: 
 	PUSH(LP) PUSH(BP)
 	MOVE(SP, BP)
-	|; Insert your free implementation here ....
+	
+	PUSH(R1)
+	
+	LD(BP,-12,R1) |; p
+	
+	CMPLT(R1,BBP,R0) |; p < base
+	BT(R0,free_end)
+	
+	
+free_end:
+	POP(R1)
+	POP(BP)
+	POP(LP)
+	RTN()
