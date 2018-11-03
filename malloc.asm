@@ -161,15 +161,50 @@ free:
 	PUSH(LP) PUSH(BP)
 	MOVE(SP, BP)
 	
-	PUSH(R1)
+	PUSH(R1) |; p
+	PUSH(R2) |; *prev
+	PUSH(R3) |; *curr
+	PUSH(R4) |; freed
 	
 	LD(BP,-12,R1) |; p
 	
 	CMPLT(R1,BBP,R0) |; p < base
 	BT(R0,free_end)
 	
+
+	ST(R2,NULL) |; int *prev = NULL (pas sûr)
+	ST(R3,FP) |; int *curr = freep (pas sûr)
+	
+free_loop:
+	
+	CMPLT(R3,R1,R0) |; curr < p
+	AND(R0,R3) |; curr < p && curr
+	BF(R0,free_continue)
+	CMOVE(R3,R2) |; prev = curr
+	|; curr = block_next(curr)
+	BR(free_loop)
+	
+	
+free_continue:
+
+	SUB(2,R1) |; p = p -2
+	MOVE(R1,R4) |; freed = p 
+	|; block_next(freed) = curr
+	|; try_merge_next(freed,curr)
+	BT(R2,free_if) |; if(prev)
+	CMOVE(R4,FP) |; freep = freed
+	BR(free_end)
+	
+free_if:
+	
+	|; block_next(prev) = freed
+	|; try_merge_next(prev,freed)
+	
 	
 free_end:
+	POP(R4)
+	POP(R3)
+	POP(R2)
 	POP(R1)
 	POP(BP)
 	POP(LP)
