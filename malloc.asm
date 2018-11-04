@@ -223,7 +223,7 @@ try_merge_next2:
 
 	|; curr_size = *(block + 1);
 	ADD(R2,R5,R0) |; block + curr_size
-	ADDc(R0,2,R0) |; block + curr_size + 2
+	ADDC(R0,2,R0) |; block + curr_size + 2
 	CMPEQ(R0,R4,R0) |; block + curr_size + 2 == next
 	BF(R0,free_end)
 	|; *(block+1) = curr_size + 2 + *(next+1);
