@@ -18,13 +18,22 @@ bbp_init_val:
 |; call free on the array at address Reg[Ra]
 .macro FREE(Ra)          PUSH(Ra) CALL(free, 1)
 
+|; Try to merge two blocks.
+|; Args:
+|;  - curr : an address to the first block
+|;  - next : an address to the second block
+|;  Note: cur < next
+|; Returns:
+|;  - 1 if the merge succeed 
+|;  - 0 if it doesn't succeed
+
 try_merge:
 	PUSH(LP) PUSH(BP)
 	MOVE(SP,BP)
 	
-	PUSH(R1)
-	PUSH(R2)
-	PUSH(R3)
+	PUSH(R1) |; curr
+	PUSH(R2) |; next
+	PUSH(R3) 
 	PUSH(R4)
 	
 	LD(BP,-12,R1)
@@ -201,9 +210,6 @@ free:
 	PUSH(R1) |; p
 	PUSH(R2) |; int* prev
 	PUSH(R3) |; int* curr
-	PUSH(R4) |; freed
-	PUSH(R5) |; curr_size
-	
 	LD(BP,-12,R1) |; p
 	
 	CMPLT(R1,BBP,R0) |; p < base
@@ -236,55 +242,15 @@ free_continue:
 merged_next:
 
 	BT(R2,free_if) |; if(prev)
-	MOVE(R1²,FP) |; freep = freed
+	MOVE(R1,FP) |; freep = freed
 	BR(free_end)
 	
 free_if:
 	PUSH(R2)
 	PUSH(R1)
-	
 	CALL(try_merge,2)
-	BT(R0,merged_prev)
-	
-	LD(R2,R5)
-	ST(R1,R2)
-	ST(R5,R1)
-	
-merged_prev:
-	
-	MOVE(R1,R4) |; freed = p 
-	|; *freed = curr
-	BR(try_merge_next) |; try_merge_next(freed,curr)
-	
-free_continue2:
-
-	BT(R2,free_if) |; if(prev)
-	MOVE(R4,FP) |; freep = freed
-	
-	BR(free_end)
-	
-free_if:
-	
-	|; *prev = freed
-	PUSH(R4)
-	PUSH(R2)
-	CALL(try_merge_next2,2)
-	
-try_merge_next2:
-
-	ST(R5,4,R2) |; curr_size = *(block + 1);
-	ADD(R2,R5,R0) |; block + curr_size
-	ADDC(R0,2,R0) |; block + curr_size + 2
-	CMPEQ(R0,R4,R0) |; block + curr_size + 2 == next
-	BF(R0,free_end)
-	|; *(block+1) = curr_size + 2 + *(next+1);
-	|; *block = *next
-	BR(free_end)
-	
 	
 free_end:
-	POP(R5)
-	POP(R4)
 	POP(R3)
 	POP(R2)
 	POP(R1)
