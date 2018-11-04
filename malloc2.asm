@@ -99,6 +99,9 @@ initialized:
 	MOVE(FP,R4)
 
 loop_freed:
+	|; we travel the list free
+	|; R4 = current address 
+	|; R5 = previous address
 	
 	LD(R4,R3)
 	CMPEQC(R3,NULL,R2)
@@ -125,7 +128,7 @@ no_space_found:
 	MULC(R1,4,R3)
 	ADDC(R3,8,R3)
 	ADD(BBP,R3,R3)
-	
+	²
 	CMPLT(SP,R3,R2)
 	BF(R2,malloc_end)
 	MOVE(R3,BBP)
