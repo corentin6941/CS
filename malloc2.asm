@@ -89,10 +89,7 @@ malloc:
 	|; the memory contains  0 at 0x3FFF8 and NULL at 0x3FFF4
 	|; and the BPP and FP are both pointing to the address 0x3FFF4
 	
-	ST(R31,BBP) 
-	ST(R0,-4,BBP)
-	ADDC(BBP,-4,BBP)
-	ADDC(FP,-4,FP)
+	ST(R0,BBP)
 	
 initialized:
 
