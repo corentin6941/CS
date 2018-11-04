@@ -169,7 +169,7 @@ space_found_greater:
 	
 	CMPEQ(FP,R4,R3)
 	BT(R3,R4_is_FP_2)
-	ST(R2,R4)
+	ST(R2,R5)
 	BR(continue_2)
 	
 R4_is_FP_2:
