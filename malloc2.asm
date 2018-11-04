@@ -51,8 +51,8 @@ try_merge:
 	ADDC(R4,2,R4)	
 	ADD(R3,R4,R4)|; *(block+1) = curr_size + 2 + *(next+1);
 	ST(R4,4,R1)
-	LD(R2,R2)
-	ST(R2,R1)|; *block = *next
+	LD(R2,0,R2)
+	ST(R2,0,R1)|; *block = *next
 	CMOVE(1,R0)
 	
 try_merge_end:
@@ -88,7 +88,7 @@ malloc:
 	|; We initialize the last block of the heap i.e
 	|; the memory contains  NULL at 0x3FFF8
 	
-	ST(R0,BBP)
+	ST(R0,0,BBP)
 	
 initialized:
 
@@ -101,7 +101,7 @@ loop_freed:
 	|; R4 = current address 
 	|; R5 = previous address
 	
-	LD(R4,R3)
+	LD(R4,0,R3)
 	CMPEQC(R3,NULL,R2)
 	BT(R2,no_space_found)
 	
@@ -114,7 +114,7 @@ loop_freed:
 	BT(R2,space_found_greater)
 	
 	MOVE(R4,R5)
-	LD(R4,R4)
+	LD(R4,0,R4)
 	BR(loop_freed)
 	
 no_space_found:
@@ -131,17 +131,17 @@ no_space_found:
 	BF(R2,malloc_end)
 	MOVE(R3,BBP)
 	
-	ST(R0,BBP)
+	ST(R0,0,BBP)
 	ST(R1,4,BBP)
 	ADDC(BBP,8,R0)
 	BR(malloc_end)
 	
 space_found_equal:
-	LD(R4,R2)
+	LD(R4,0,R2)
 	
 	CMPEQ(FP,R4,R3)
 	BT(R3,R4_is_FP_1)
-	ST(R2,R5)
+	ST(R2,0,R5)
 	BR(continue_1)
 	
 R4_is_FP_1:
@@ -150,7 +150,7 @@ R4_is_FP_1:
 	
 continue_1:
 
-	ST(R0,R4)
+	ST(R0,0,R4)
 	ST(R1,4,R4)
 	
 	ADDC(R4,8,R0)
@@ -158,7 +158,7 @@ continue_1:
 
 space_found_greater:
 	
-	LD(R4,R2)
+	LD(R4,0,R2)
 	LD(R4,4,R3)
 	
 	PUSH(R2)
@@ -170,13 +170,13 @@ space_found_greater:
 	
 	CMPEQ(FP,R4,R3)
 	BT(R3,R4_is_FP_2)
-	ST(R2,R5)
+	ST(R2,0,R5)
 	BR(continue_2)
 	
 R4_is_FP_2:
 	MOVE(R2,FP)	
 continue_2:
-	ST(R0,R4)
+	ST(R0,0,R4)
 	ST(R1,4,R4)
 	
 	ADDC(R4,8,R0)
@@ -187,7 +187,7 @@ continue_2:
 	SUB(R3,R1,R3)
 	ST(R3,4,R2)
 	POP(R2)
-	ST(R2,R4)
+	ST(R2,0,R4)
 	
 malloc_end:
 	POP(R5)
@@ -226,7 +226,7 @@ free_loop:
 	AND(R0,R3,R0) |; curr < p && curr
 	BF(R0,free_continue)
 	MOVE(R3,R2) |; prev = curr
-	ST(R3,R3) |; curr = (*curr)
+	ST(R3,0,R3) |; curr = (*curr)
 	BR(free_loop)
 	
 	
@@ -237,9 +237,9 @@ free_continue:
 	PUSH(R1)
 	PUSH(R3)
 	CALL(try_merge,2)
-	ST(R1,R2)
+	ST(R1,0,R2)
 	BT(R0,merged_next)
-	ST(R3,R1)
+	ST(R3,0,R1)
 merged_next:
 
 	BT(R2,free_if) |; if(prev)
