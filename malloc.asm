@@ -198,6 +198,7 @@ free_continue2:
 
 	BT(R2,free_if) |; if(prev)
 	MOVE(R4,FP) |; freep = freed
+	
 	BR(free_end)
 	
 try_merge_next:
@@ -205,9 +206,7 @@ try_merge_next:
 	ST(R4,4,R5) |; curr_size = *(block + 1);
 	MULC(R5,4,R0)
 	ADD(R4,R0,R0) |; block + curr_size
-	
 	ADDC(R0,8,R0) |; block + curr_size + 2
-	
 	CMPEQ(R0,R3,R0) |; block + curr_size + 2 == next
 	BF(R0,free_continue2)
 	
