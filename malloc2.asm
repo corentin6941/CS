@@ -53,7 +53,7 @@ try_merge:
 	ST(R4,4,R1)
 	LD(R2,R2)
 	ST(R2,R1)|; *block = *next
-	MOVEC(1,R0)
+	CMOVE(1,R0)
 	
 try_merge_end:
 
