@@ -222,7 +222,7 @@ free:
 free_loop:
 	
 	CMPLT(R3,R1,R0) |; curr < p
-	AND(R0,R3) |; curr < p && curr
+	AND(R0,R3,R0) |; curr < p && curr
 	BF(R0,free_continue)
 	MOVE(R3,R2) |; prev = curr
 	ST(R3,R3) |; curr = (*curr)
