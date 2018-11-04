@@ -86,14 +86,15 @@ malloc:
 	CMPEQC(BBP,bbp_init_val,R2)
 	BF(R2,initialized)
 	|; We initialize the last block of the heap i.e
-	|; the memory contains  0 at 0x3FFF8 and NULL at 0x3FFF4
-	|; and the BPP and FP are both pointing to the address 0x3FFF4
+	|; the memory contains  NULL at 0x3FFF8
 	
 	ST(R0,BBP)
 	
 initialized:
 
 	MOVE(FP,R4)
+	CMPEQC(R1,0,R2)
+	BT(malloc_end)
 
 loop_freed:
 	|; we travel the list free
