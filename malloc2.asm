@@ -18,7 +18,44 @@ bbp_init_val:
 |; call free on the array at address Reg[Ra]
 .macro FREE(Ra)          PUSH(Ra) CALL(free, 1)
 
+try_merge:
+	PUSH(LP) PUSH(BP)
+	MOVE(SP,BP)
+	
+	PUSH(R1)
+	PUSH(R2)
+	PUSH(R3)
+	PUSH(R4)
+	
+	LD(BP,-12,R1)
+	LD(BP,-16,R2)
+	
+	ST(R1,4,R3) |; curr_size = *(block + 1);
+	MULC(R3,4,R4)
+	ADD(R1,R4,R4) |; block + curr_size
+	ADDC(R4,8,R4) |; block + curr_size + 2
+	CMPEQ(R4,R2,R4) |; block + curr_size + 2 == next
+	CMOVE(0,R0)
+	BF(R4,try_merge_end)
+	
+	LD(R2,4,R4)|; next_size
+	ADDC(R4,2,R4)	
+	ADD(R3,R4,R4)|; *(block+1) = curr_size + 2 + *(next+1);
+	ST(R4,4,R1)
+	LD(R2,R2)
+	ST(R2,R1)|; *block = *next
+	MOVEC(1,R0)
+	
+try_merge_end:
 
+	POP(R4)
+	POP(R3)
+	POP(R2)
+	POP(R1)
+	POP(BP)
+	POP(LP)
+	RTN()
+	
 |; Dynamically allocates an array of size n.
 |; Args:
 |;  - n (>0): size of the array to allocate 
@@ -189,6 +226,32 @@ free_loop:
 free_continue:
 
 	SUBC(8,R1,R1) |; p = p -2
+	
+	PUSH(R1)
+	PUSH(R3)
+	CALL(try_merge,2)
+	ST(R1,R2)
+	BT(R0,merged_next)
+	ST(R3,R1)
+merged_next:
+
+	BT(R2,free_if) |; if(prev)
+	MOVE(R1²,FP) |; freep = freed
+	BR(free_end)
+	
+free_if:
+	PUSH(R2)
+	PUSH(R1)
+	
+	CALL(try_merge,2)
+	BT(R0,merged_prev)
+	
+	LD(R2,R5)
+	ST(R1,R2)
+	ST(R5,R1)
+	
+merged_prev:
+	
 	MOVE(R1,R4) |; freed = p 
 	|; *freed = curr
 	BR(try_merge_next) |; try_merge_next(freed,curr)
@@ -199,23 +262,6 @@ free_continue2:
 	MOVE(R4,FP) |; freep = freed
 	
 	BR(free_end)
-	
-try_merge_next:
-
-	ST(R4,4,R5) |; curr_size = *(block + 1);
-	MULC(R5,4,R0)
-	ADD(R4,R0,R0) |; block + curr_size
-	ADDC(R0,8,R0) |; block + curr_size + 2
-	CMPEQ(R0,R3,R0) |; block + curr_size + 2 == next
-	BF(R0,free_continue2)
-	
-	LD(R3,4,R0)|; next_size
-	ADDC(R0,2,R0)	
-	ADD(R5,R0)|; *(block+1) = curr_size + 2 + *(next+1);
-	ST(R0,4,R4)
-	ST(R3,R4)|; *block = *next
-	
-	BR(free_continue2)
 	
 free_if:
 	
