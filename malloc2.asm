@@ -128,7 +128,7 @@ no_space_found:
 	MULC(R1,4,R3)
 	ADDC(R3,8,R3)
 	ADD(BBP,R3,R3)
-	²
+	
 	CMPLT(SP,R3,R2)
 	BF(R2,malloc_end)
 	MOVE(R3,BBP)
