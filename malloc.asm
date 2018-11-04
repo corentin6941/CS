@@ -214,7 +214,19 @@ try_merge_next:
 free_if:
 	
 	|; block_next(prev) = freed
-	|; try_merge_next(prev,freed)
+	PUSH(R4)
+	PUSH(R2)
+	CALL(try_merge_next2,2)
+	
+try_merge_next2:
+
+	|; curr_size = *(block + 1);
+	ADD(R2,R5,2,R0) |; block + curr_size + 2
+	CMPEQ(R0,R4,R0) |; block + curr_size + 2 == next
+	BF(R0,free_end)
+	|; block_size(block) = curr_size + 2 + block_size(next);
+	|; block_next(block) = block_next(next);
+	BR(free_end)
 	
 	
 free_end:
