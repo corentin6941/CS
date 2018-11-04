@@ -144,6 +144,7 @@ continue_2:
 	ST(R2,R4)
 	
 malloc_end:
+	POP(R5)
 	POP(R4)
 	POP(R3)
 	POP(R2)
@@ -173,8 +174,8 @@ free:
 	BT(R0,free_end)
 	
 
-	ST(R2,NULL) |; int *prev = NULL (pas sûr)
-	ST(R3,FP) |; int *curr = freep (pas sûr)
+	CMOVE(NULL,R2) |; int *prev = NULL (pas sûr)
+	MOVE(FP,R3) |; int *curr = freep (pas sûr)
 	
 free_loop:
 	
@@ -182,13 +183,13 @@ free_loop:
 	AND(R0,R3) |; curr < p && curr
 	BF(R0,free_continue)
 	MOVE(R3,R2) |; prev = curr
-	ST(R3,0,R3) |; curr = (*curr)
+	ST(R3,R3) |; curr = (*curr)
 	BR(free_loop)
 	
 	
 free_continue:
 
-	SUBC(2,R1) |; p = p -2
+	SUBC(2,R1,R1) |; p = p -2
 	MOVE(R1,R4) |; freed = p 
 	|; *freed = curr
 	PUSH(R3)
@@ -203,9 +204,12 @@ free_continue2:
 	
 try_merge_next:
 
-	ST(R5,4,R4) |; curr_size = *(block + 1);
+	ST(R4,4,R5) |; curr_size = *(block + 1);
+	MULC(R5,4,R5)
 	ADD(R4,R5,R0) |; block + curr_size
-	ADDC(R0,2,R0) |; block + curr_size + 2
+	
+	ADDC(R0,8,R0) |; block + curr_size + 2
+	
 	CMPEQ(R0,R3,R0) |; block + curr_size + 2 == next
 	BF(R0,free_continue2)
 	|; *(block+1) = curr_size + 2 + *(next+1);
