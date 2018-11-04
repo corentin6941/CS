@@ -181,8 +181,8 @@ free_loop:
 	CMPLT(R3,R1,R0) |; curr < p
 	AND(R0,R3) |; curr < p && curr
 	BF(R0,free_continue)
-	CMOVE(R3,R2) |; prev = curr
-	 |; curr = (*curr)
+	MOVE(R3,R2) |; prev = curr
+	ST(R3,0,R3) |; curr = (*curr)
 	BR(free_loop)
 	
 	
@@ -203,7 +203,7 @@ free_continue2:
 	
 try_merge_next:
 
-	|; curr_size = *(block + 1);
+	ST(R5,4,R4) |; curr_size = *(block + 1);
 	ADD(R4,R5,R0) |; block + curr_size
 	ADDC(R0,2,R0) |; block + curr_size + 2
 	CMPEQ(R0,R3,R0) |; block + curr_size + 2 == next
@@ -221,7 +221,7 @@ free_if:
 	
 try_merge_next2:
 
-	|; curr_size = *(block + 1);
+	ST(R5,4,R2) |; curr_size = *(block + 1);
 	ADD(R2,R5,R0) |; block + curr_size
 	ADDC(R0,2,R0) |; block + curr_size + 2
 	CMPEQ(R0,R4,R0) |; block + curr_size + 2 == next
