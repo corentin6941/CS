@@ -189,12 +189,10 @@ free_loop:
 	
 free_continue:
 
-	SUBC(2,R1,R1) |; p = p -2
+	SUBC(8,R1,R1) |; p = p -2
 	MOVE(R1,R4) |; freed = p 
 	|; *freed = curr
-	PUSH(R3)
-	PUSH(R4)
-	CALL(try_merge_next,2) |; try_merge_next(freed,curr)
+	BR(try_merge_next) |; try_merge_next(freed,curr)
 	
 free_continue2:
 
@@ -205,15 +203,20 @@ free_continue2:
 try_merge_next:
 
 	ST(R4,4,R5) |; curr_size = *(block + 1);
-	MULC(R5,4,R5)
-	ADD(R4,R5,R0) |; block + curr_size
+	MULC(R5,4,R0)
+	ADD(R4,R0,R0) |; block + curr_size
 	
 	ADDC(R0,8,R0) |; block + curr_size + 2
 	
 	CMPEQ(R0,R3,R0) |; block + curr_size + 2 == next
 	BF(R0,free_continue2)
-	|; *(block+1) = curr_size + 2 + *(next+1);
-	|; *block = *next
+	
+	LD(R3,4,R0)|; next_size
+	ADDC(R0,2,R0)	
+	ADD(R5,R0)|; *(block+1) = curr_size + 2 + *(next+1);
+	ST(R0,4,R4)
+	ST(R3,R4)|; *block = *next
+	
 	BR(free_continue2)
 	
 free_if:
