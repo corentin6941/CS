@@ -182,7 +182,7 @@ free_loop:
 	AND(R0,R3) |; curr < p && curr
 	BF(R0,free_continue)
 	CMOVE(R3,R2) |; prev = curr
-	 |; curr = block_next(curr) = (*curr)
+	 |; curr = (*curr)
 	BR(free_loop)
 	
 	
@@ -190,7 +190,7 @@ free_continue:
 
 	SUB(2,R1) |; p = p -2
 	MOVE(R1,R4) |; freed = p 
-	|; block_next(freed) = curr
+	|; *freed = curr
 	PUSH(R3)
 	PUSH(R4)
 	CALL(try_merge_next,2) |; try_merge_next(freed,curr)
@@ -207,13 +207,13 @@ try_merge_next:
 	ADD(R4,R5,2,R0) |; block + curr_size + 2
 	CMPEQ(R0,R3,R0) |; block + curr_size + 2 == next
 	BF(R0,free_continue2)
-	|; block_size(block) = curr_size + 2 + block_size(next);
-	|; block_next(block) = block_next(next);
+	|; *(block+1) = curr_size + 2 + *(next+1);
+	|; *block = *next
 	BR(free_continue2)
 	
 free_if:
 	
-	|; block_next(prev) = freed
+	|; *prev = freed
 	PUSH(R4)
 	PUSH(R2)
 	CALL(try_merge_next2,2)
@@ -224,8 +224,8 @@ try_merge_next2:
 	ADD(R2,R5,2,R0) |; block + curr_size + 2
 	CMPEQ(R0,R4,R0) |; block + curr_size + 2 == next
 	BF(R0,free_end)
-	|; block_size(block) = curr_size + 2 + block_size(next);
-	|; block_next(block) = block_next(next);
+	|; *(block+1) = curr_size + 2 + *(next+1);
+	|; *block = *next
 	BR(free_end)
 	
 	
