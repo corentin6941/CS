@@ -41,7 +41,7 @@ try_merge:
 	|; We compute the adjacent block address and store it in R4
 	|;R3 the size of the block
 	
-	ST(R1,4,R3) |; curr_size = *(block + 1);
+	ST(R3,4,R1) |; curr_size = *(block + 1);
 	MULC(R3,4,R4)
 	ADD(R1,R4,R4) |; block + curr_size*4
 	ADDC(R4,8,R4) |; block + (curr_size + 2)*4
