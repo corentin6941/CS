@@ -227,7 +227,7 @@ free:
 	BT(R0,free_end)
 	
 	LDR(bbp_init_val,R0)
-	CMPLTC(R1,R0,R0)
+	CMPLT(R1,R0,R0)
 	BF(R0,free_end)
 
 	CMOVE(NULL,R2) |; int *prev = NULL (pas sûr)
@@ -255,7 +255,7 @@ free_continue:
 	|; (R3 == bbp_init_val) we don't try to merge with it
 	
 	LDR(bbp_init_val,R0)
-	CMPEQC(R3,R0,R0)
+	CMPEQ(R3,R0,R0)
 	BT(R0,merged_next)
 	
 	PUSH(R1)
