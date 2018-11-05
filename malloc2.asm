@@ -239,7 +239,7 @@ free_loop:
 	 |; curr < p && curr |;SI R3 Null quoi faire ?
 	BF(R0,free_continue)
 	MOVE(R3,R2) |; prev = curr
-	ST(R3,0,R3) |; curr = (*curr)
+	LD(R3,0,R3) |; curr = (*curr)
 	BR(free_loop)
 	
 	
