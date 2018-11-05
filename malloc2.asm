@@ -245,7 +245,7 @@ free_loop:
 	
 free_continue:
 
-	SUBC(8,R1,R1) |; p = p -2
+	SUBC(R1,8,R1) |; p = p -2
 	
 	|; we add R1 in the FP list
 	
