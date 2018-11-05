@@ -90,8 +90,11 @@ malloc:
 	LD(BP,-12,R1)
 	
 	CMOVE(NULL,R0)
-	CMPEQC(BBP,bbp_init_val,R2)
+	
+	LDR(bbp_init_val,R2)
+	CMPEQ(BBP,R2,R2)
 	BF(R2,initialized)
+	
 	|; We initialize the last block of the heap i.e
 	|; the memory contains  NULL at 0x3FFF8
 	
@@ -223,7 +226,8 @@ free:
 	CMPLT(R1,BBP,R0) |; p < base
 	BT(R0,free_end)
 	
-	CMPLTC(R1,bbp_init_val,R0)
+	LDR(bbp_init_val,R0)
+	CMPLTC(R1,R0,R0)
 	BF(R0,free_end)
 
 	CMOVE(NULL,R2) |; int *prev = NULL (pas sûr)
@@ -247,8 +251,11 @@ free_continue:
 	
 	
 	ST(R3,0,R1)
+	|; if the next block is the last element of the list 
+	|; (R3 == bbp_init_val) we don't try to merge with it
 	
-	CMPEQC(R3,bbp_init_val,R0)
+	LDR(bbp_init_val,R0)
+	CMPEQC(R3,R0,R0)
 	BT(R0,merged_next)
 	
 	PUSH(R1)
