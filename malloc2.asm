@@ -38,20 +38,25 @@ try_merge:
 	
 	LD(BP,-12,R1)
 	LD(BP,-16,R2)
+	|; We compute the adjacent block address and store it in R4
+	|;R3 the size of the block
 	
 	ST(R1,4,R3) |; curr_size = *(block + 1);
 	MULC(R3,4,R4)
-	ADD(R1,R4,R4) |; block + curr_size
-	ADDC(R4,8,R4) |; block + curr_size + 2
-	CMPEQ(R4,R2,R4) |; block + curr_size + 2 == next
+	ADD(R1,R4,R4) |; block + curr_size*4
+	ADDC(R4,8,R4) |; block + (curr_size + 2)*4
+	CMPEQ(R4,R2,R4) |; block + (curr_size + 2)*4 == next
 	CMOVE(0,R0)
 	BF(R4,try_merge_end)
 	
+	|;If the adjacent block is free, we compute the size of
+	|; the merged block.
 	LD(R2,4,R4)|; next_size
 	ADDC(R4,2,R4)	
 	ADD(R3,R4,R4)|; *(block+1) = curr_size + 2 + *(next+1);
 	ST(R4,4,R1)
 	LD(R2,0,R2)
+	
 	ST(R2,0,R1)|; *block = *next
 	CMOVE(1,R0)
 	
@@ -63,6 +68,8 @@ try_merge_end:
 	POP(R1)
 	POP(BP)
 	POP(LP)
+	
+	
 	RTN()
 	
 |; Dynamically allocates an array of size n.
@@ -216,6 +223,8 @@ free:
 	CMPLT(R1,BBP,R0) |; p < base
 	BT(R0,free_end)
 	
+	CMPLTC(R1,bbp_init_val,R0)
+	BF(R0,free_end)
 
 	CMOVE(NULL,R2) |; int *prev = NULL (pas sûr)
 	MOVE(FP,R3) |; int *curr = freep (pas sûr)
@@ -223,7 +232,7 @@ free:
 free_loop:
 	
 	CMPLT(R3,R1,R0) |; curr < p
-	AND(R0,R3,R0) |; curr < p && curr
+	 |; curr < p && curr |;SI R3 Null quoi faire ?
 	BF(R0,free_continue)
 	MOVE(R3,R2) |; prev = curr
 	ST(R3,0,R3) |; curr = (*curr)
@@ -234,12 +243,18 @@ free_continue:
 
 	SUBC(8,R1,R1) |; p = p -2
 	
+	|; we add R1 in the FP list
+	
+	
+	ST(R3,0,R1)
+	
+	CMPEQC(R3,bbp_init_val,R0)
+	BT(R0,merged_next)
+	
 	PUSH(R1)
 	PUSH(R3)
 	CALL(try_merge,2)
-	ST(R1,0,R2)
-	BT(R0,merged_next)
-	ST(R3,0,R1)
+	
 merged_next:
 
 	BT(R2,free_if) |; if(prev)
@@ -247,6 +262,7 @@ merged_next:
 	BR(free_end)
 	
 free_if:
+	ST(R1,0,R2)
 	PUSH(R2)
 	PUSH(R1)
 	CALL(try_merge,2)
