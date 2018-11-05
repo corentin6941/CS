@@ -94,7 +94,7 @@ initialized:
 
 	MOVE(FP,R4)
 	CMPEQC(R1,0,R2)
-	BT(malloc_end)
+	BT(R2,malloc_end)
 
 loop_freed:
 	|; we travel the list free
