@@ -41,7 +41,7 @@ try_merge:
 	|; We compute the adjacent block address and store it in R4
 	|;R3 the size of the block
 	
-	ST(R3,4,R1) |; curr_size = *(block + 1);
+	LD(R1,4,R3) |; curr_size = *(block + 1);
 	MULC(R3,4,R4)
 	ADD(R1,R4,R4) |; block + curr_size*4
 	ADDC(R4,8,R4) |; block + (curr_size + 2)*4
@@ -258,8 +258,8 @@ free_continue:
 	CMPEQ(R3,R0,R0)
 	BT(R0,merged_next)
 	
-	PUSH(R1)
 	PUSH(R3)
+	PUSH(R1)
 	CALL(try_merge,2)
 	
 merged_next:
@@ -270,8 +270,9 @@ merged_next:
 	
 free_if:
 	ST(R1,0,R2)
-	PUSH(R2)
+	
 	PUSH(R1)
+	PUSH(R2)
 	CALL(try_merge,2)
 	
 free_end:
