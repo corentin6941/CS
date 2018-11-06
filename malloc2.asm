@@ -251,12 +251,12 @@ free_continue:
 	
 	
 	ST(R3,0,R1)
-	|; if the next block is the last element of the list 
-	|; (R3 == bbp_init_val) we don't try to merge with it
 	
-	LDR(bbp_init_val,R0)
-	CMPEQ(R3,R0,R0)
-	BT(R0,merged_next)
+	
+	
+	
+	
+	
 	
 	PUSH(R3)
 	PUSH(R1)
