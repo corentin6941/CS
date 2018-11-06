@@ -39,12 +39,15 @@ try_merge:
 	LD(BP,-12,R1)
 	LD(BP,-16,R2)
 	|; We compute the adjacent block address and store it in R4
-	|;R3 the size of the block
 	
+	|;R3 the size of the block
 	LD(R1,4,R3) |; curr_size = *(block + 1);
 	MULC(R3,4,R4)
 	ADD(R1,R4,R4) |; block + curr_size*4
 	ADDC(R4,8,R4) |; block + (curr_size + 2)*4
+	|; we compare the address of the adjacent block (R4)
+	|; to the pointer to the next block in the free list(R2)
+	
 	CMPEQ(R4,R2,R4) |; block + (curr_size + 2)*4 == next
 	CMOVE(0,R0)
 	BF(R4,try_merge_end)
@@ -54,10 +57,12 @@ try_merge:
 	LD(R2,4,R4)|; next_size
 	ADDC(R4,2,R4)	
 	ADD(R3,R4,R4)|; *(block+1) = curr_size + 2 + *(next+1);
-	ST(R4,4,R1)
-	LD(R2,0,R2)
 	
+	ST(R4,4,R1)|;update the size of the merged block
+	
+	LD(R2,0,R2)
 	ST(R2,0,R1)|; *block = *next
+	
 	CMOVE(1,R0)
 	
 try_merge_end:
@@ -78,6 +83,9 @@ try_merge_end:
 |; Returns:
 |;  - the address of the allocated array
 malloc: 
+	|; malloc was written without watching 
+	|; the file malloc.c.
+	
 	PUSH(LP) PUSH(BP)
 	MOVE(SP, BP)
 	
@@ -91,8 +99,11 @@ malloc:
 	
 	CMOVE(NULL,R0)
 	
+	|;we check if the heap is initialized
+	
 	LDR(bbp_init_val,R2)
 	CMPEQ(BBP,R2,R2)
+	
 	BF(R2,initialized)
 	
 	|; We initialize the last block of the heap i.e
@@ -107,7 +118,9 @@ initialized:
 	BT(R2,malloc_end)
 
 loop_freed:
-	|; we travel the list free
+	|; The travel the list free
+	|; and handle the 3 cases of malloc differently
+	
 	|; R4 = current address 
 	|; R5 = previous address
 	
@@ -128,76 +141,101 @@ loop_freed:
 	BR(loop_freed)
 	
 no_space_found:
-	|; we compute the new address that would take
+	|; We compute the new address that would take
 	|; BBP if we add the block needed
 	|;store it in R3 and compare it to SP preventing to corrupt 
 	|;the pile (if it's the case we return NULL)
+	
 	
 	MULC(R1,4,R3)
 	ADDC(R3,8,R3)
 	SUB(BBP,R3,R3)
 	
+	|; We check if there is enough space above BBP 
+	|; to store the new block
+	
+	CMPLT(R3,BBP,R2)
+	BF(R2,malloc_end)
+	
 	CMPLT(SP,R3,R2)
 	BF(R2,malloc_end)
-	MOVE(R3,BBP)
 	
-	ST(R0,0,BBP)
-	ST(R1,4,BBP)
-	ADDC(BBP,8,R0)
+	
+	MOVE(R3,BBP)|;Updates BBP
+	
+	|;Updates the headers of the block
+	ST(R0,0,BBP)|;Updates address
+	ST(R1,4,BBP)|;Updates size
+	
+	ADDC(BBP,8,R0)|; Save the return address 
 	BR(malloc_end)
 	
 space_found_equal:
+	|;We save the pointer to the next block
+	
 	LD(R4,0,R2)
 	
-	CMPEQ(FP,R4,R3)
+	CMPEQ(FP,R4,R3)|;If prev is fp we update FP
 	BT(R3,R4_is_FP_1)
-	ST(R2,0,R5)
+	
+	ST(R2,0,R5)|;Update the previous header
+	
 	BR(continue_1)
 	
 R4_is_FP_1:
 
-	MOVE(R2,FP)	
+	MOVE(R2,FP)|;Updates FP
 	
 continue_1:
 
-	ST(R0,0,R4)
-	ST(R1,4,R4)
+	|;Updates the headers of the block
+	ST(R0,0,R4)|;Updates address
+	ST(R1,4,R4)|;Updates size
 	
-	ADDC(R4,8,R0)
+	ADDC(R4,8,R0)|; Save the return address 
 	BR(malloc_end)
 
 space_found_greater:
-	
-	LD(R4,0,R2)
-	LD(R4,4,R3)
-	
-	PUSH(R2)
+	=
+	LD(R4,0,R2)|;pointer to the next block
+	LD(R4,4,R3)|;size of the current block
+	|;we save them on the pile
+	PUSH(R2) 
 	PUSH(R3)
         
+	|;Computes the new address of the next block
+	|;saves it in R2
 	ADDC(R1,2,R2)
 	MULC(R2,4,R2)
 	ADD(R4,R2,R2)
 	
+	|;If the block is the first one we update FP
 	CMPEQ(FP,R4,R3)
 	BT(R3,R4_is_FP_2)
+	
+	|;If not we update prev
 	ST(R2,0,R5)
 	BR(continue_2)
 	
 R4_is_FP_2:
 	MOVE(R2,FP)	
 continue_2:
+	|;Updates the headers of the block
 	ST(R0,0,R4)
 	ST(R1,4,R4)
 	
-	ADDC(R4,8,R0)
+	ADDC(R4,8,R0)|; Save the return address 
 	MOVE(R2,R4)
 	
+	|; We updates the freed block created by loading 
+	|; previous size of the block (stored on the pile)
+	|; and computing the new size.
 	POP(R3)
 	SUBC(R3,2,R3)
 	SUB(R3,R1,R3)
-	ST(R3,4,R2)
+	ST(R3,4,R2|; Updates the new bock size header.
 	POP(R2)
-	ST(R2,0,R4)
+	ST(R2,0,R4)|;Updates the address header.
 	
 malloc_end:
 	POP(R5)
@@ -226,7 +264,7 @@ free:
 	CMPLT(R1,BBP,R0) |; p < base
 	BT(R0,free_end)
 	
-	LDR(bbp_init_val,R0)
+	LDR(bbp_init_val,R0)|;p > end
 	CMPLT(R1,R0,R0)
 	BF(R0,free_end)
 
@@ -248,16 +286,7 @@ free_continue:
 	SUBC(R1,8,R1) |; p = p -2
 	
 	|; we add R1 in the FP list
-	
-	
 	ST(R3,0,R1)
-	
-	
-	
-	
-	
-	
-	
 	PUSH(R3)
 	PUSH(R1)
 	CALL(try_merge,2)
