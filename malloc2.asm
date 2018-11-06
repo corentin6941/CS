@@ -232,7 +232,7 @@ continue_2:
 	POP(R3)
 	SUBC(R3,2,R3)
 	SUB(R3,R1,R3)
-	ST(R3,4,R2|; Updates the new bock size header.
+	ST(R3,4,R2)|; Updates the new bock size header.
 	POP(R2)
 	ST(R2,0,R4)|;Updates the address header.
 	
