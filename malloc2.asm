@@ -31,6 +31,7 @@ try_merge:
 	PUSH(LP) PUSH(BP)
 	MOVE(SP,BP)
 	
+	PUSH(R0)
 	PUSH(R1) |; curr
 	PUSH(R2) |; next
 	PUSH(R3) 
@@ -72,6 +73,7 @@ try_merge_end:
 	POP(R3)
 	POP(R2)
 	POP(R1)
+	POP(R0)
 	POP(BP)
 	POP(LP)
 	
@@ -256,6 +258,7 @@ free:
 	PUSH(LP) PUSH(BP)
 	MOVE(SP, BP)
 	
+	PUSH(R0)
 	PUSH(R1) |; p
 	PUSH(R2) |; int* prev
 	PUSH(R3) |; int* curr
@@ -308,6 +311,7 @@ free_end:
 	POP(R3)
 	POP(R2)
 	POP(R1)
+	POP(R0)
 	POP(BP)
 	POP(LP)
 	RTN()
