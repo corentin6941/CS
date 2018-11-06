@@ -196,7 +196,6 @@ continue_1:
 	BR(malloc_end)
 
 space_found_greater:
-	=
 	LD(R4,0,R2)|;pointer to the next block
 	LD(R4,4,R3)|;size of the current block
 	|;we save them on the pile
