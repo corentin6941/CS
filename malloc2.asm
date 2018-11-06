@@ -55,13 +55,9 @@ try_merge:
 	|;If the adjacent block is free, we compute the size of
 	|; the merged block.
 	
-	LDR(bbp_init_val,R0)
-	CMPEQ(R2,R0,R0)
-	CMOVE(1,R4)
 	BT(R0,continue_merge)
 	LD(R2,4,R4)|; next_size
 	ADDC(R4,2,R4)
-continue_merge:	
 	ADD(R3,R4,R4)|; *(block+1) = curr_size + 2 + *(next+1);
 	
 	ST(R4,4,R1)|;update the size of the merged block
