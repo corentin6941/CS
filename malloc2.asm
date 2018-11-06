@@ -110,9 +110,11 @@ malloc:
 	BF(R2,initialized)
 	
 	|; We initialize the last block of the heap i.e
-	|; the memory contains  NULL at 0x3FFF8
+	|; the memory contains  NULL at 0x3FFF8 and 0 at 0x3FFFC
 	
 	ST(R0,0,BBP)
+	CMOVE(0,R2)
+	ST(R2,4,BBP)
 	
 initialized:
 
