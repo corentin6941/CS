@@ -55,7 +55,6 @@ try_merge:
 	|;If the adjacent block is free, we compute the size of
 	|; the merged block.
 	
-	BT(R0,continue_merge)
 	LD(R2,4,R4)|; next_size
 	ADDC(R4,2,R4)
 	ADD(R3,R4,R4)|; *(block+1) = curr_size + 2 + *(next+1);
